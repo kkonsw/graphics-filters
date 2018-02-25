@@ -65,5 +65,11 @@ namespace graphics_lab1_filters
         {
             backgroundWorker.CancelAsync();
         }
+
+        private void размытиеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            BlurFilter filter = new BlurFilter();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
     }
 }
