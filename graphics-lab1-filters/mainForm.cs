@@ -33,6 +33,39 @@ namespace graphics_lab1_filters
             pictureBox.Refresh();
         }
 
+        private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = "PNG Image|*.png|JPG Image|*.jpg|BMP Image|*.bmp";
+            dialog.ShowDialog();
+
+            if (dialog.FileName != "")
+            {
+                System.IO.FileStream fs =
+         (System.IO.FileStream)dialog.OpenFile();
+
+                switch (dialog.FilterIndex)
+                {
+                    case 1:
+                        pictureBox.Image.Save(fs,
+                           System.Drawing.Imaging.ImageFormat.Png);
+                        break;
+
+                    case 2:
+                        pictureBox.Image.Save(fs,
+                           System.Drawing.Imaging.ImageFormat.Jpeg);
+                        break;
+
+                    case 3:
+                        pictureBox.Image.Save(fs,
+                           System.Drawing.Imaging.ImageFormat.Bmp);
+                        break;
+                }
+
+                fs.Close();
+            }
+        }
+
         private void инверсияToolStripMenuItem_Click(object sender, EventArgs e)
         {
             InvertFilter filter= new InvertFilter();
@@ -70,6 +103,6 @@ namespace graphics_lab1_filters
         {
             BlurFilter filter = new BlurFilter();
             backgroundWorker.RunWorkerAsync(filter);
-        }
+        }      
     }
 }
