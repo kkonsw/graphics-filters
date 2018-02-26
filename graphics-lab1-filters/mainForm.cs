@@ -66,12 +66,6 @@ namespace graphics_lab1_filters
             }
         }
 
-        private void инверсияToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            InvertFilter filter= new InvertFilter();
-            backgroundWorker.RunWorkerAsync(filter);
-        }
-
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             Bitmap newImage = ((Filters)e.Argument).processImage(image, backgroundWorker);
@@ -99,10 +93,34 @@ namespace graphics_lab1_filters
             backgroundWorker.CancelAsync();
         }
 
+        private void инверсияToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            InvertFilter filter = new InvertFilter();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
         private void размытиеToolStripMenuItem_Click(object sender, EventArgs e)
         {
             BlurFilter filter = new BlurFilter();
             backgroundWorker.RunWorkerAsync(filter);
-        }      
+        }
+
+        private void фильтрToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GaussianFilter filter = new GaussianFilter();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void чернобелыйToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GrayScaleFilter filter = new GrayScaleFilter();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void линейноеРастяжениеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AutoContrast filter = new AutoContrast(image);
+            backgroundWorker.RunWorkerAsync(filter);
+        }
     }
 }
