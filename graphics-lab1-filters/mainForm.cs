@@ -122,5 +122,59 @@ namespace graphics_lab1_filters
             AutoContrast filter = new AutoContrast(image);
             backgroundWorker.RunWorkerAsync(filter);
         }
+
+        private void сепияToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Sepia filter = new Sepia();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void яркостьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new Brightness();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void резкостьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new Sharpness();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void серыйМирToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new GrayWorld(image);
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void медианныйToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new Median();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void расширениеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new Dilation();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void сужениеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new Erosion();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void открытиеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new Opening();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void закрытиеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new Closing();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
     }
 }
