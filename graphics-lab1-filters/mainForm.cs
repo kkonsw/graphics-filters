@@ -176,5 +176,11 @@ namespace graphics_lab1_filters
             Filters filter = new Closing();
             backgroundWorker.RunWorkerAsync(filter);
         }
+
+        private void gradToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new Grad();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
     }
 }
