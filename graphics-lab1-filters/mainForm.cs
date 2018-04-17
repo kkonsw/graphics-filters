@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace graphics_lab1_filters
@@ -13,6 +8,11 @@ namespace graphics_lab1_filters
     public partial class mainForm : Form
     {
         Bitmap image;
+        float[,] mask;
+        static int n;
+        Form Form2;
+        DataGridView DataGrid1;
+        bool flag = false;
 
         public mainForm()
         {
@@ -37,48 +37,26 @@ namespace graphics_lab1_filters
         {
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.Filter = "PNG Image|*.png|JPG Image|*.jpg|BMP Image|*.bmp";
-            dialog.ShowDialog();
 
-            if (dialog.FileName != "")
+            if (dialog.ShowDialog() == DialogResult.OK)
             {
-                System.IO.FileStream fs =
-         (System.IO.FileStream)dialog.OpenFile();
-
-                switch (dialog.FilterIndex)
-                {
-                    case 1:
-                        pictureBox.Image.Save(fs,
-                           System.Drawing.Imaging.ImageFormat.Png);
-                        break;
-
-                    case 2:
-                        pictureBox.Image.Save(fs,
-                           System.Drawing.Imaging.ImageFormat.Jpeg);
-                        break;
-
-                    case 3:
-                        pictureBox.Image.Save(fs,
-                           System.Drawing.Imaging.ImageFormat.Bmp);
-                        break;
-                }
-
-                fs.Close();
+                image.Save(dialog.FileName);
             }
         }
 
-        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            Bitmap newImage = ((Filters)e.Argument).processImage(image, backgroundWorker);
+            Bitmap newImage = ((Filters)e.Argument).ProcessImage(image, backgroundWorker);
             if (backgroundWorker.CancellationPending != true)
                 image = newImage;
         }
 
-        private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar.Value = e.ProgressPercentage;
         }
 
-        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (!e.Cancelled)
             {
@@ -88,44 +66,44 @@ namespace graphics_lab1_filters
             progressBar.Value = 0;
         }
 
-        private void button_Click(object sender, EventArgs e)
+        private void Button_Click(object sender, EventArgs e)
         {
             backgroundWorker.CancelAsync();
         }
 
         private void инверсияToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            InvertFilter filter = new InvertFilter();
+            Filters filter = new InvertFilter();
             backgroundWorker.RunWorkerAsync(filter);
         }
 
         private void размытиеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            BlurFilter filter = new BlurFilter();
+            Filters filter = new BlurFilter();
             backgroundWorker.RunWorkerAsync(filter);
         }
 
         private void фильтрToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            GaussianFilter filter = new GaussianFilter();
+            Filters filter = new GaussianFilter();
             backgroundWorker.RunWorkerAsync(filter);
         }
 
         private void чернобелыйToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            GrayScaleFilter filter = new GrayScaleFilter();
+            Filters filter = new GrayScaleFilter();
             backgroundWorker.RunWorkerAsync(filter);
         }
 
         private void линейноеРастяжениеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AutoContrast filter = new AutoContrast(image);
+            Filters filter = new AutoContrast(image);
             backgroundWorker.RunWorkerAsync(filter);
         }
 
         private void сепияToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Sepia filter = new Sepia();
+            Filters filter = new Sepia();
             backgroundWorker.RunWorkerAsync(filter);
         }
 
@@ -155,14 +133,30 @@ namespace graphics_lab1_filters
 
         private void расширениеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Filters filter = new Dilation();
-            backgroundWorker.RunWorkerAsync(filter);
+            if (flag)
+            {
+                Filters filter = new Dilation(mask);
+                backgroundWorker.RunWorkerAsync(filter);
+            }
+            else
+            {
+                Filters filter = new Dilation();
+                backgroundWorker.RunWorkerAsync(filter);
+            }
         }
 
         private void сужениеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Filters filter = new Erosion();
-            backgroundWorker.RunWorkerAsync(filter);
+            if (flag)
+            {
+                Filters filter = new Erosion(mask);
+                backgroundWorker.RunWorkerAsync(filter);
+            }
+            else
+            {
+                Filters filter = new Erosion();
+                backgroundWorker.RunWorkerAsync(filter);
+            }
         }
 
         private void открытиеToolStripMenuItem_Click(object sender, EventArgs e)
@@ -181,6 +175,78 @@ namespace graphics_lab1_filters
         {
             Filters filter = new Grad();
             backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void фильтрСобеляToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new Sobel();
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void motionBlurToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Filters filter = new MotionBlur(3);
+            backgroundWorker.RunWorkerAsync(filter);
+        }
+
+        private void x3ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            n = 3;
+            mask = new float[n, n];
+            Form2 = new Form();
+            Form2.Size = new Size(500, 550);
+            Form2.Text = "Структурный элемент";
+            Form2.Show();
+            DataGrid1 = new DataGridView();
+            DataGrid1.Size = new Size(300, 300);
+            DataGrid1.ColumnCount = n;
+            DataGrid1.RowCount = n;
+            for (int i = 0; i < n; i++)
+            {
+                DataGrid1.Columns[i].Width = 50;
+                DataGrid1.Rows[i].Height = 25;
+            }
+            Form2.Controls.Add(DataGrid1);
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < n; j++)
+                    DataGrid1[i, j].Value = 0;
+            DataGrid1.Show();
+            Button ok = new Button();
+            ok.Size = new Size(80, 50);
+            ok.Text = "ok";
+            ok.Location = new Point(200, 305);
+            ok.Click += new EventHandler(button_click);
+            Form2.Controls.Add(ok);
+            ok.Show();
+        }
+
+        public void button_click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    if (DataGrid1[i, j].Value.ToString() == "0")
+                        mask[i, j] = 0;
+                    else
+                        mask[i, j] = 1;
+                }
+            }
+            Form2.Close();
+            MessageBox.Show("Ок");
+            flag = true;
+        }
+
+        private void опорныйЭлементToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int x = Convert.ToInt32(textBox1.Text);
+            int y = Convert.ToInt32(textBox2.Text);
+            if (colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Color color = colorDialog1.Color;
+                Filters filter = new ColorBased(color, x, y, image);
+                backgroundWorker.RunWorkerAsync(filter);
+            }       
         }
     }
 }

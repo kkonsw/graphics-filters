@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.ComponentModel;
 
@@ -10,7 +6,7 @@ namespace graphics_lab1_filters
 {
     abstract class Filters
     {
-        protected abstract Color calculateNewPixelColor(Bitmap sourceImage, int x, int y);
+        protected abstract Color CalculateNewPixelColor(Bitmap sourceImage, int x, int y);
 
         public int Clamp(int value, int min, int max)
         {
@@ -21,7 +17,7 @@ namespace graphics_lab1_filters
             return value;
         }
 
-        public virtual Bitmap processImage(Bitmap sourceImage, BackgroundWorker worker)
+        public virtual Bitmap ProcessImage(Bitmap sourceImage, BackgroundWorker worker)
         {
             Bitmap resultImage = new Bitmap(sourceImage.Width, sourceImage.Height);
 
@@ -33,7 +29,7 @@ namespace graphics_lab1_filters
 
                 for (int j = 0; j < sourceImage.Height; j++)
                 {
-                    resultImage.SetPixel(i, j, calculateNewPixelColor(sourceImage, i, j));
+                    resultImage.SetPixel(i, j, CalculateNewPixelColor(sourceImage, i, j));
                 }
             }
 
@@ -43,7 +39,7 @@ namespace graphics_lab1_filters
 
     class InvertFilter : Filters
     {
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
             Color sourceColor = sourceImage.GetPixel(x, y);
             Color resultColor = Color.FromArgb(255 - sourceColor.R,
@@ -56,7 +52,7 @@ namespace graphics_lab1_filters
 
     class GrayScaleFilter : Filters
     {
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
             Color sourceColor = sourceImage.GetPixel(x, y);
             int Intensity = (int)(0.36f * sourceColor.R + 0.53f * sourceColor.G + 0.11f * sourceColor.B);
@@ -68,7 +64,7 @@ namespace graphics_lab1_filters
 
     class Sepia : Filters
     {
-        protected override Color calculateNewPixelColor(Bitmap Image, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap Image, int x, int y)
         {
             float k = 20f;
             Color src = Image.GetPixel(x, y);
@@ -81,7 +77,7 @@ namespace graphics_lab1_filters
 
     class Brightness : Filters
     {
-        protected override Color calculateNewPixelColor(Bitmap Image, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap Image, int x, int y)
         {
             int k = 15;
             Color src = Image.GetPixel(x, y);
@@ -108,7 +104,7 @@ namespace graphics_lab1_filters
                 }
         }
 
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
             Color src = sourceImage.GetPixel(x, y);
             return Color.FromArgb(
@@ -136,7 +132,7 @@ namespace graphics_lab1_filters
             avg_g /= n;
             avg_b /= n;
         }
-        protected override Color calculateNewPixelColor(Bitmap src_img, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap src_img, int x, int y)
         {
             float avg = (avg_r + avg_g + avg_r) / 3;
             Color scr = src_img.GetPixel(x, y);
@@ -157,7 +153,7 @@ namespace graphics_lab1_filters
             this.kernel = kernel;
         }
 
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
             int radiusX = kernel.GetLength(0) / 2;
             int radiusY = kernel.GetLength(1) / 2;
@@ -199,7 +195,7 @@ namespace graphics_lab1_filters
 
     class GaussianFilter : MatrixFilter
     {
-        public void createGaussianKernel(int radius, float sigma)
+        public void CreateGaussianKernel(int radius, float sigma)
         {
             int size = 2 * radius + 1;
             kernel = new float[size, size];
@@ -219,7 +215,7 @@ namespace graphics_lab1_filters
 
         public GaussianFilter()
         {
-            createGaussianKernel(3, 2);
+            CreateGaussianKernel(3, 2);
         }
     }
 
@@ -236,9 +232,67 @@ namespace graphics_lab1_filters
         }
     }
 
+    class Sobel : MatrixFilter
+    {
+        protected override Color CalculateNewPixelColor(Bitmap src, int x, int y)
+        {
+            kernel = new float[3, 3] { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+            Color tmp_x = base.CalculateNewPixelColor(src, x, y);
+            kernel = new float[3, 3] { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+            Color tmp_y = base.CalculateNewPixelColor(src, x, y);
+            return Color.FromArgb(
+                Clamp((int)(Math.Sqrt(tmp_x.R * tmp_x.R + tmp_y.R * tmp_y.R)), 0, 255),
+                Clamp((int)(Math.Sqrt(tmp_x.G * tmp_x.G + tmp_y.G * tmp_y.G)), 0, 255),
+                Clamp((int)(Math.Sqrt(tmp_x.B * tmp_x.B + tmp_y.B * tmp_y.B)), 0, 255));
+        }
+    }
+
+    class MotionBlur : MatrixFilter
+    {
+        public MotionBlur(int radius)
+        {
+            int size = 2 * radius + 1;
+            kernel = new float[size, size];
+            float norm = (1f / size);
+            for (int i = -radius; i <= radius; i++)
+            {
+                for (int j = -radius; j <= radius; j++)
+                {
+                    if (i == j)
+                        kernel[i + radius, j + radius] = norm;
+                    else
+                        kernel[i + radius, j + radius] = 0;
+
+                }
+            }
+        }
+    }
+
+    class ColorBased : Filters
+    {
+        Color color;
+        Color color_dst;
+
+        public ColorBased(Color color_src, int x, int y, Bitmap src_img)
+        {
+            color = color_src;
+            color_dst = src_img.GetPixel(x, y);          
+        }
+
+        protected override Color CalculateNewPixelColor(Bitmap src_img, int x, int y)
+        {
+            Color src = src_img.GetPixel(x, y);
+
+            return Color.FromArgb(
+                Clamp((int)(color.R * color_dst.R / src.R), 0, 255),
+                Clamp((int)(color.G * color_dst.G / src.G), 0, 255),
+                Clamp((int)(color.B * color_dst.B / src.B), 0, 255));
+        }
+    }
+
     class Median : Filters
     {
-        protected override Color calculateNewPixelColor(Bitmap src_img, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap src_img, int x, int y)
         {
             int range = 3;
             int size = (2 * range + 1) * (2 * range + 1);
@@ -280,7 +334,20 @@ namespace graphics_lab1_filters
 
     class Dilation : Morfology
     {
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        public Dilation()
+        {
+            kernel = new float[3, 3];
+            kernel[0, 0] = 0.0f; kernel[0, 1] = 1.0f; kernel[0, 2] = 0.0f;
+            kernel[1, 0] = 1.0f; kernel[1, 1] = 1.0f; kernel[1, 2] = 1.0f;
+            kernel[2, 0] = 0.0f; kernel[2, 1] = 1.0f; kernel[2, 2] = 0.0f;
+        }
+
+        public Dilation(float[,] kernel)
+        {
+            this.kernel = kernel;
+        }
+
+        protected override Color CalculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
              int radiusX = kernel.GetLength(0) / 2;
              int radiusY = kernel.GetLength(1) / 2;
@@ -309,7 +376,20 @@ namespace graphics_lab1_filters
 
     class Erosion : Morfology
     {
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        public Erosion()
+        {
+            kernel = new float[3, 3];
+            kernel[0, 0] = 0.0f; kernel[0, 1] = 1.0f; kernel[0, 2] = 0.0f;
+            kernel[1, 0] = 1.0f; kernel[1, 1] = 1.0f; kernel[1, 2] = 1.0f;
+            kernel[2, 0] = 0.0f; kernel[2, 1] = 1.0f; kernel[2, 2] = 0.0f;
+        }
+
+        public Erosion(float[,] kernel)
+        {
+            this.kernel = kernel;
+        }
+
+        protected override Color CalculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
             int radiusX = kernel.GetLength(0) / 2;
             int radiusY = kernel.GetLength(1) / 2;
@@ -338,23 +418,23 @@ namespace graphics_lab1_filters
 
     class Opening : Morfology
     {
-        public override Bitmap processImage(Bitmap sourceImage, BackgroundWorker worker)
+        public override Bitmap ProcessImage(Bitmap sourceImage, BackgroundWorker worker)
         {
             Dilation dilation = new Dilation();
             Erosion erosion = new Erosion(); 
 
-            return dilation.processImage(erosion.processImage(sourceImage, worker), worker);
+            return dilation.ProcessImage(erosion.ProcessImage(sourceImage, worker), worker);
         }
     }
 
     class Closing : Morfology
     {
-        public override Bitmap processImage(Bitmap sourceImage, BackgroundWorker worker)
+        public override Bitmap ProcessImage(Bitmap sourceImage, BackgroundWorker worker)
         {
             Dilation dilation = new Dilation();
             Erosion erosion = new Erosion();
            
-            return erosion.processImage(dilation.processImage(sourceImage, worker), worker);
+            return erosion.ProcessImage(dilation.ProcessImage(sourceImage, worker), worker);
         }
     }
 
@@ -365,7 +445,7 @@ namespace graphics_lab1_filters
         {
             LImage = Image;
         }
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
             Color LColor = LImage.GetPixel(x, y);
             Color RColor = sourceImage.GetPixel(x, y);
@@ -377,15 +457,15 @@ namespace graphics_lab1_filters
 
     class Grad : Filters
     {
-        public override Bitmap processImage(Bitmap sourceImage, BackgroundWorker worker)
+        public override Bitmap ProcessImage(Bitmap sourceImage, BackgroundWorker worker)
         {
             Dilation dilation = new Dilation();
             Erosion erosion = new Erosion();
-            Subtraction subtraction = new Subtraction(dilation.processImage(sourceImage, worker));
-            return subtraction.processImage(erosion.processImage(sourceImage, worker), worker);
+            Subtraction subtraction = new Subtraction(dilation.ProcessImage(sourceImage, worker));
+            return subtraction.ProcessImage(erosion.ProcessImage(sourceImage, worker), worker);
         }
 
-        protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
+        protected override Color CalculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
             throw new NotImplementedException();
         }
