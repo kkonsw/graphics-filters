@@ -270,13 +270,14 @@ namespace graphics_lab1_filters
 
     class ColorBased : Filters
     {
-        Color color;
+        Color color_src;
         Color color_dst;
 
-        public ColorBased(Color color_src, int x, int y, Bitmap src_img)
+        public ColorBased(Color color, int x, int y, Bitmap src_img)
         {
-            color = color_src;
-            color_dst = src_img.GetPixel(x, y);          
+            color_dst = color;
+            color_src = src_img.GetPixel(x, y);
+            src_img.SetPixel(x, y, color_dst);
         }
 
         protected override Color CalculateNewPixelColor(Bitmap src_img, int x, int y)
@@ -284,9 +285,9 @@ namespace graphics_lab1_filters
             Color src = src_img.GetPixel(x, y);
 
             return Color.FromArgb(
-                Clamp((int)(color.R * color_dst.R / src.R), 0, 255),
-                Clamp((int)(color.G * color_dst.G / src.G), 0, 255),
-                Clamp((int)(color.B * color_dst.B / src.B), 0, 255));
+                Clamp((int)(src.R * color_dst.R / color_src.R), 0, 255),
+                Clamp((int)(src.G * color_dst.G / color_src.G), 0, 255),
+                Clamp((int)(src.B * color_dst.B / color_src.B), 0, 255));
         }
     }
 
