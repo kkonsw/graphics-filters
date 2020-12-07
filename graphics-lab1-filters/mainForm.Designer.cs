@@ -76,6 +76,7 @@
             this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox.TabIndex = 0;
             this.pictureBox.TabStop = false;
+            this.pictureBox.MouseClick += OnPictureBoxClicked;
             // 
             // menuStrip
             // 

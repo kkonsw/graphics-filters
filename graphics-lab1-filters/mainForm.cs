@@ -246,7 +246,18 @@ namespace graphics_lab1_filters
                 Color color = colorDialog1.Color;
                 Filters filter = new ColorBased(color, x, y, image);
                 backgroundWorker.RunWorkerAsync(filter);
-            }       
+            }
+        }
+
+        void OnPictureBoxClicked(object sender, MouseEventArgs args)
+        {
+            var location = args.Location;
+            if (colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Color color = colorDialog1.Color;
+                Filters filter = new ColorBased(color, location.X, location.Y, image);
+                backgroundWorker.RunWorkerAsync(filter);
+            }
         }
     }
 }

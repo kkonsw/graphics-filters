@@ -284,6 +284,13 @@ namespace graphics_lab1_filters
         {
             Color src = src_img.GetPixel(x, y);
 
+            /*if (color_src.R == 0)
+                color_src = Color.FromArgb(1, color_src.G, color_src.B);
+            if (color_src.G == 0)
+                color_src = Color.FromArgb(color_src.R, 1, color_src.B);
+            if (color_src.B == 0)
+                color_src = Color.FromArgb(color_src.R, color_src.G, 1);*/
+
             return Color.FromArgb(
                 Clamp((int)(src.R * color_dst.R / color_src.R), 0, 255),
                 Clamp((int)(src.G * color_dst.G / color_src.G), 0, 255),
