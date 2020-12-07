@@ -30,4 +30,4 @@ C#, Visual Studio
 
 ## Скриншоты
 
-![](screenshots/filters/filters1.png)
+![](screenshots/filters1.png)
